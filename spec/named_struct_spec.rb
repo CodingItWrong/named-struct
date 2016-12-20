@@ -3,7 +3,7 @@ require 'named_struct'
 require 'pry'
 
 RSpec.describe NamedStruct do
-  before do
+  before(:all) do
     Person = NamedStruct.new(:first, :last)
   end
 
@@ -11,29 +11,33 @@ RSpec.describe NamedStruct do
     Person.new(first: 'Fred', last: 'Flintstone')
   end
 
-  it 'sets omitted fields to nil' do
-    instance = Person.new(first: 'Madonna')
-    expect(instance.first).to eq('Madonna')
-    expect(instance.last).to be_nil
+  it 'requires all fields' do
+    expect {
+      Person.new(first: 'Madonna')
+    }.to raise_error ArgumentError, 'missing keyword: last'
   end
 
   context 'invalid fields' do
     it 'rejects one invalid field' do
       expect {
-        Person.new(number: 24601)
+        Person.new(first: 'Jean', last: 'Valjean', number: 24601)
       }.to raise_error(ArgumentError, 'unknown keyword: number')
     end
 
     it 'rejects multiple invalid fields' do
       expect {
-        Person.new(number: 24601, demeanor: 'sad')
+        Person.new(first: 'Jean',
+                   last: 'Valjean',
+                   number: 24601,
+                   demeanor: 'sad')
       }.to raise_error(ArgumentError, 'unknown keywords: number, demeanor')
     end
   end
 
   it 'provides readers' do
-    instance = Person.new(first: 'Fred')
+    instance = Person.new(first: 'Fred', last: 'Flintstone')
     expect(instance.first).to eq('Fred')
+    expect(instance.last).to eq('Flintstone')
   end
 
   it 'provides writers' do
